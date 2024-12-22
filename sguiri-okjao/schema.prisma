@@ -1,0 +1,95 @@
+datasource db {
+  provider = "sqlite"
+  // Wasp requires that the url is set to the DATABASE_URL environment variable.
+  url      = env("DATABASE_URL")
+}
+
+// Wasp requires the `prisma-client-js` generator to be present.
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+    id        Int        @id @default(autoincrement())
+    role      Role       @relation(fields: [roleId], references: [id])
+    products  Product[]
+    movements Movement[]
+    roleId    Int
+}
+
+model Product {
+    id        Int        @id @default(autoincrement())
+    name      String
+    quantity  Int
+    movements Movement[]
+    User      User?      @relation(fields: [userId], references: [id])
+    userId    Int?
+    Project   Project?   @relation(fields: [projectId], references: [id])
+    projectId Int?
+}
+
+model Movement {
+    id        Int      @id @default(autoincrement())
+    product   Product  @relation(fields: [productId], references: [id])
+    productId Int
+    type      String
+    quantity  Int
+    reference String
+    notes     String?
+    timestamp DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id])
+    userId    Int
+}
+
+model Client {
+    id             Int           @id @default(autoincrement())
+    name           String
+    contactDetails String
+    transactions   Transaction[]
+    Project        Project?      @relation(fields: [projectId], references: [id])
+    projectId      Int?
+}
+
+model Supplier {
+    id             Int           @id @default(autoincrement())
+    name           String
+    contactDetails String
+    transactions   Transaction[]
+}
+
+model Transaction {
+    id         Int       @id @default(autoincrement())
+    client     Client?   @relation(fields: [clientId], references: [id])
+    clientId   Int?
+    supplier   Supplier? @relation(fields: [supplierId], references: [id])
+    supplierId Int?
+    type       String
+    date       DateTime  @default(now())
+    details    String
+}
+
+model Employee {
+    id               Int       @id @default(autoincrement())
+    name             String
+    personalInfo     String
+    employmentStatus String
+    emergencyContact String
+    projects         Project[]
+}
+
+model Project {
+    id          Int        @id @default(autoincrement())
+    name        String
+    description String
+    employees   Employee[]
+    clients     Client[]
+    products    Product[]
+    cost        Float
+    status      String
+}
+
+model Role {
+    id    Int    @id @default(autoincrement())
+    name  String
+    users User[]
+}
